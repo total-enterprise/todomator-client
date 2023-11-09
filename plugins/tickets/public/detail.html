@@ -1,0 +1,76 @@
+<style>
+	.CLASS h2 { margin: 0; /* max-width: 640px; */ }
+	.CLASS .ui-box-icon { color: #68B25B; margin-right: 10px; }
+	.CLASS .ui-box-label { font-weight: normal; color: #A0A0A0; font-size: 13px; user-select: text; }
+	.CLASS .attachments { font-size: 12px; padding: 0; margin-top: 10px; }
+	.CLASS .attachments .file { color: #777; display: block; margin-top: 2px; background-color: #fff; border-radius: var(--radius); padding: 4px 5px; }
+	.CLASS .heading { display: flex; justify-content: space-between; align-items: center; }
+	.CLASS .body { color: #999; }
+	.CLASS .status { font-weight: bold; font-size: 12px; border: 1px solid #e0e0e0; display: inline-block; padding: 6px 12px; border-radius: var(--radius); }
+</style>
+
+<ui-component name="box" path="common.form" config="if:~PATH~;icon:ti ti-check-circle;reload:?/reload;scrollbar:1;scrollbarshadow:1;submit:?/submit;width:800;hide:?/hide" class="hidden ~PATH~" plugin="~PATH~">
+	<ui-bind path="?" config="template">
+		<script type="text/plain">
+			<div class="padding bg-smoke">
+				<div class="heading m">
+					<h2>{{ value.name }}</h2>
+				</div>
+				<hr />
+				<div class="row">
+					<div class="col-md-6">
+						<div class="keyvalue">
+							<span>@(Status)</span>
+							<div class="control b">{{ value.statusid | status }}</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="keyvalue">
+							<span>@(Date created)</span>
+							<div class="control b">{{ value.date | format('[date]') }}</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</script>
+	</ui-bind>
+	<div class="padding">
+		<div class="body">
+			<ui-component name="iframepreview" path="?.html" class="hidden"></ui-component>
+		</div>
+	</div>
+	<ui-bind path="?" config="template">
+		<script type="text/plain">
+			{{ if value.attachments && value.attachments.length }}
+			<div class="padding bg-smoke">
+				<div class="b"><i class="ti ti-paperclip mr5"></i>@(Attachments)</div>
+				<div class="attachments">
+				 {{ foreach m in value.attachments }}
+					<a href="{{ m.url }}" target="_blank" class="file quickpreview"><span class="pull-right fs11 ml10">{{ m.dtcreated | format('[date]') }}</span><span class="pull-right silver fs11">{{ m.size | filesize }}</span><i class="ti ti-file mr5"></i>{{ m.name }}</a>
+				 {{ end }}
+				</div>
+			</div>
+			{{ fi }}
+		</script>
+	</ui-bind>
+
+
+	<nav>
+		<button name="cancel" style="width:100%">@(Close)</button>
+	</nav>
+</ui-component>
+
+<script>
+	PLUGIN(function(exports) {
+
+		exports.reload = function(com) {
+			var model = exports.model;
+			com.reconfigure({ title: '@(ID:) ' + model.id });
+		};
+
+		exports.hide = function() {
+			location.hash = '';
+		};
+
+	});
+</script>

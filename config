@@ -1,0 +1,11 @@
+name                        : Todomator
+cdn                         : https://cdn.componentator.com
+
+// API endpoint with the token:
+todomator                   : https://your.todomator.com/api/?token=1234567890
+
+// Folder identifier, example:
+todomator_folder            : coIPua3UkVFr
+
+// Assign to:
+todomator_users   (array)   : petersirka

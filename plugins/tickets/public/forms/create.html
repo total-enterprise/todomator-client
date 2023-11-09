@@ -1,0 +1,118 @@
+<style>
+	.CLASS .attachments { font-size: 12px; padding: 0; margin-top: 10px; }
+	.CLASS .attachments .file { color: #777; display: block; margin-top: 2px; background-color: #fff; border-radius: var(--radius); padding: 4px 5px; }
+</style>
+
+<ui-component name="box" path="common.form" config="if:CLASS;width:770;title:@(Create ticket);autofocus:1;reload:?/reload;submit:?/submit;icon:ti ti-check-square;enter:true;zindex:30" plugin="CLASS" class="CLASS hidden invisible">
+	<nav>
+		<button class="exec" data-exec="?/attachment"><i class="ti ti-paperclip mr5"></i>@(Upload attachment)</button>
+	</nav>
+	<div class="padding npb">
+
+		<p>@(The ticket will automatically be processed and assigned to the right person and you can track ticket states. <b>Warning:</b> You can't update the ticket after it's created. )</p>
+
+		<div class="m">
+			<ui-component name="input" path="?.name" config="type:string;required:1;maxlength:250;placeholder:@(Enter a ticket name)">@(Name)</ui-component>
+			<div class="help">@(The ticket name should be clearly identifiable for solving the problem.)</div>
+		</div>
+
+		<ui-bind path="?.attachments" config="show:value && value.length;template" class="padding hidden block m" style="border-radius:var(--radius);background-color:#fffae8">
+			<script type="text/plain">
+				<div class="b"><i class="ti ti-paperclip mr5"></i>@(Attachments)</div>
+				<div class="attachments">
+					{{ foreach m in value }}
+						<a href="{{ m.url }}" target="_blank" class="file quickpreview"><span class="pull-right fs11 red ml5 exec" data-exec="?/remattachment" data-prevent="true" data-id="{{ m.id }}"><i class="ti ti-remove"></i></span><span class="pull-right fs11 ml10">{{ m.dtcreated | format('[date]') }}</span><span class="pull-right silver fs11">{{ m.size | filesize }}</span><i class="ti ti-file mr5"></i>{{ m.name }}</a>
+					{{ end }}
+				</div>
+			</script>
+		</ui-bind>
+
+		<div class="m">
+			<div class="bg-smoke padding" style="border-radius:var(--radius)">
+
+				<div class="message message-alert">
+					<div class="b"><i class="ti ti-lightbulb-on mr5"></i>@(TIP:)</div>
+					@(In the description field, rich content can be pasted from the Word app or an email message.)
+				</div>
+
+				<div class="ui-input-label mt10">@(Description:)</div>
+				<ui-component name="iframeeditable" path="?.html" config="bind:html" style="border:1px solid #E0E0E0;background-color:#FFF;border-radius:var(--radius);padding:10px;min-height:200px"></ui-component>
+			</div>
+		</div>
+	</div>
+
+	<nav>
+		<ui-component name="validate" path="?">
+			<button name="submit" disabled><i class="ti ti-check-circle"></i>@(Create)</button>
+			<button name="cancel">@(Close)</button>
+		</ui-component>
+	</nav>
+</ui-component>
+
+<script>
+
+	PLUGIN(function(exports) {
+
+		var caller = null;
+
+		exports.reload = function() {
+			caller = exports.caller;
+		};
+
+		exports.attachment = function() {
+			var model = exports.model;
+			var opt = {};
+			opt.base64 = true;
+			opt.callback = function(file) {
+				file.id = GUID(6);
+				file.name = file.filename;
+				file.data = file.body;
+				delete file.filename;
+				delete file.body;
+				exports.push('attachments', file);
+			};
+
+			SETTER('filereader/open', opt);
+		};
+
+		exports.remattachment = function(el) {
+			var id = ATTRD(el);
+			var model = exports.model.attachments;
+			var arr = model.remove('id', id);
+			exports.set('attachments', arr);
+		};
+
+		exports.submit = function(hide) {
+
+			var model = exports.form;
+			var html = model.html;
+
+			var index = html.indexOf(' id="todomatorcontent"');
+			if (index !== -1) {
+				index = html.lastIndexOf('<', index);
+				html = html.substring(0, index) + html.substring(html.indexOf('>', index) + 1);
+				index = html.lastIndexOf('</body>');
+
+				if (index === -1) {
+					html += '</body>';
+					index = html.length - 7;
+				}
+
+				index = html.lastIndexOf('</div>', index);
+				if (index === -1)
+					return;
+
+				html = html.substring(0, index) + html.substring(index + 6);
+				model.html = html;
+			}
+
+			model.html = '<html>' + model.html + '</html>';
+
+			exports.tapi('tickets_create ERROR @showloading', model, function(response) {
+				caller.exec('refresh');
+				hide();
+			});
+		};
+
+	});
+</script>

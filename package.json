@@ -1,0 +1,23 @@
+{
+  "name": "TodomatorClient",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Total-js-Enterprise/todomator-client"
+  },
+  "dependencies": {
+    "total5": "beta",
+    "querybuilderpg": "latest"
+  },
+  "scripts": {
+    "start": "node index.js 8000"
+  },
+  "keywords": [
+    "todomator",
+    "tasks",
+    "todo"
+  ],
+  "author": "Peter Širka / Total.js",
+  "license": "MIT"
+}

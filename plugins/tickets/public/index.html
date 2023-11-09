@@ -1,0 +1,147 @@
+<style>
+	.CLASS .listing figure section { display: flex; align-items: center; font-size: 12px; }
+	.CLASS .listing figure.closed { color: #999; }
+	.CLASS .listing figure.open .status, .CLASS .listing figure.open .name { color: #4285F4; }
+	.CLASS .listing figure.open .name { font-weight: bold; }
+	.CLASS .listing .name { max-width: 900px; }
+	.CLASS .listing .status { width: 100px; border-right: 1px solid #e0e0e0; margin-right: 15px; padding-right: 15px; }
+	.CLASS .listing .attachment { margin-left: 5px; }
+	.CLASS .listing .meta { margin-left: auto; }
+	.CLASS .listing .meta .date { margin-left: 15px; }
+
+	.CLASS header { display: flex; justify-content: space-between; align-items: center; }
+	.CLASS header .toolbar { margin: 0 10px 0; }
+	.CLASS .searchbox { max-width: 600px; text-align: left; position: relative; width: 100%; }
+	.CLASS .searchbox .ui-searchinput { width: 100%; height: 34px; background-color: #F3F3F3; border: 0; border-radius: var(--radius); }
+	.CLASS .searchbox .ui-searchinput input { height: 33px; font-size: 14px; }
+	.CLASS .searchbox .ui-searchinput > span { width: 35px; line-height: 34px; font-size: 14px; }
+	.CLASS .searchbox .ui-searchinput > div { margin-left: 35px; }
+</style>
+
+<ui-plugin config="aclass:1">
+
+	<header>
+		<label><i class="ti ti-check-circle"></i>@(Tickets)</label>
+
+		<div class="searchbox hidden-xs">
+			<ui-component name="searchinput" path="?.search" config="placeholder:@(Search in tickets)"></ui-component>
+		</div>
+
+		<div class="toolbar">
+			<button class="exec" data-exec="?/create"><i class="ti ti-plus-circle"></i>@(Create)</button>
+		</div>
+	</header>
+
+	<ui-component name="viewbox" path="common.page" config="parent:window;margin:60;scrollbarshadow:1;centered:0" class="invisible">
+
+		<div class="padding auto">
+			<ui-bind path="?.items" config="template" class="listing">
+				<script type="text/html">
+					{{ foreach m in value }}
+						<figure class="exec {{ m.statusid }}" data-exec="?/open" data-id="{{ m.id }}">
+							<section>
+								<div class="status">{{ m.statusid | status }}</div>
+								<div class="name hellip">{{ m.name }}</div>
+								{{ if m.attachments && m.attachments.length }}
+										<div class="attachment gray"><i class="ti ti-paperclip"></i></div>
+									{{ fi }}
+								<div class="meta">
+									<div class="date gray"><i class="ti ti-calendar mr5"></i>{{ m.date | format('[date]') }}</div>
+								</div>
+							</section>
+						</figure>
+					{{ end }}
+				</script>
+			</ui-bind>
+		</div>
+		<br />
+
+	</ui-component>
+
+</ui-plugin>
+
+<ui-component name="importer" path="common.form" config="if:formticketsdetail;url:/~ID~/detail.html"></ui-component>
+<ui-component name="importer" path="common.form" config="if:formticketscreate;url:/~ID~/forms/create.html"></ui-component>
+
+<script>
+
+	PLUGIN(function(exports) {
+
+		exports.reload = function() {
+			exports.refresh();
+			var hash = location.hash.substring(1);
+			if (hash)
+				setTimeout(exports.detail, 1000, hash);
+		};
+
+		exports.detail = function(el) {
+			var id = ATTRD(el);
+			exports.tapi('tickets_read/{0} ERROR @showloading'.format(id), function(response) {
+				SET('formticketsdetail @hideloading', response);
+				SET('common.form', 'formticketsdetail');
+			});
+		};
+
+		exports.open = function(el) {
+			location.hash = ATTRD(el);
+		};
+
+		exports.create = function() {
+			SET('formticketscreate', { html: '<html><body style="outline:0;font-family:Arial;font-size:14px;padding:0;margin:0"><div id="todomatorcontent" contenteditable="true" style="min-height:100px;outline:0"></div></body></html>' });
+			SET('common.form', 'formticketscreate');
+		};
+
+		exports.refresh = function() {
+			var model = exports.model || {};
+			var filter = {};
+			var search = model.search;
+
+			if (search)
+				filter.q = search;
+
+			exports.tapi(QUERIFY('tickets', filter) + ' ERROR @showloading', function(response) {
+				exports.set('items @hideloading', response);
+			});
+		};
+
+		exports.watch('search', function(value) {
+			setTimeout2(exports.name + 'search', exports.refresh, 150);
+		});
+
+		$(W).on('hashchange', function() {
+			var id = location.hash.substring(1);
+			if (id && id.length > 9)
+				exports.detail(id);
+		});
+	});
+
+	Thelpers.status = function(id) {
+		var status = {};
+
+		switch (id) {
+			case 'open':
+				status.name = 'In progress';
+				status.icon = 'ti ti-spinner';
+				status.color = '#4285F4';
+				break;
+			case 'pending':
+				status.name = 'Pending';
+				status.icon = 'ti ti-hourglass';
+				status.color = '#EA71B0';
+				break;
+			case 'closed':
+				status.name = 'Closed';
+				status.icon = 'ti ti-check-circle';
+				status.color = '#C0C0C0';
+				break;
+			case 'postponed':
+				status.name = 'Postponed';
+				status.icon = 'ti ti-calendar';
+				status.color = '#EC8632';
+				break;
+		}
+
+		return status ? '<i class="{icon} mr5" style="color:{color}"></i><span>{name}</span>'.arg(status) : DEF.empty;
+	};
+
+</script>
