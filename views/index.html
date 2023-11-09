@@ -101,7 +101,7 @@
 			$('body').rclass('invisible', 200);
 		})();
 
-		NAV.custom(true);
+		NAV.remember('openplatform');
 		NAV.clientside('.jR');
 
 		MIDDLEWARE('init', function(next) {
@@ -131,7 +131,7 @@
 		});
 
 		ROUTE('/', function() {
-			SET('common.page', 'welcome');
+			REDIRECT('/tickets/');
 		}, 'init');
 
 		ON('@flag showloading', function() {

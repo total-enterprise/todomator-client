@@ -33,29 +33,37 @@
 	</header>
 
 	<ui-component name="viewbox" path="common.page" config="parent:window;margin:60;scrollbarshadow:1;centered:0" class="invisible">
+		<ui-component name="empty" path="?.items" config="parent:auto;icon:ti ti-check-circle green;margin:60">
 
-		<div class="padding auto">
-			<ui-bind path="?.items" config="template" class="listing">
-				<script type="text/html">
-					{{ foreach m in value }}
-						<figure class="exec {{ m.statusid }}" data-exec="?/open" data-id="{{ m.id }}">
-							<section>
-								<div class="status">{{ m.statusid | status }}</div>
-								<div class="name hellip">{{ m.name }}</div>
-								{{ if m.attachments && m.attachments.length }}
-										<div class="attachment gray"><i class="ti ti-paperclip"></i></div>
-									{{ fi }}
-								<div class="meta">
-									<div class="date gray"><i class="ti ti-calendar mr5"></i>{{ m.date | format('[date]') }}</div>
-								</div>
-							</section>
-						</figure>
-					{{ end }}
-				</script>
-			</ui-bind>
-		</div>
-		<br />
+			<script type="text/html">
+				<div class="b" style="padding-top:10px">@(Time to relax!)</div>
+				<div class="help nmt">@(Todomator is without any tickets)</div>
+			</script>
 
+			<div>
+				<div class="padding auto">
+					<ui-bind path="?.items" config="template" class="listing">
+						<script type="text/html">
+							{{ foreach m in value }}
+								<figure class="exec {{ m.statusid }}" data-exec="?/open" data-id="{{ m.id }}">
+									<section>
+										<div class="status">{{ m.statusid | status }}</div>
+										<div class="name hellip">{{ m.name }}</div>
+										{{ if m.attachments && m.attachments.length }}
+												<div class="attachment gray"><i class="ti ti-paperclip"></i></div>
+											{{ fi }}
+										<div class="meta">
+											<div class="date gray"><i class="ti ti-calendar mr5"></i>{{ m.date | format('[date]') }}</div>
+										</div>
+									</section>
+								</figure>
+							{{ end }}
+						</script>
+					</ui-bind>
+				</div>
+				<br />
+			</div>
+		</ui-component>
 	</ui-component>
 
 </ui-plugin>
